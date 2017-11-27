@@ -211,3 +211,18 @@ header {
   margin-right: auto;
   margin-left: auto;
 }
+
+/* cursus hoofdpagina */
+#introduction_text .col-sm-2 {
+    width: 0px;
+	padding: 0px;
+	margin: 0px;
+}
+#introduction_text .col-sm-8 {
+    width: 100%;
+    padding: 0px 0px 0px 15px;
+}
+.page-course {
+    padding: 0px;
+}
+
