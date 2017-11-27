@@ -1418,7 +1418,7 @@ class CourseRestorer
      */
     public function restore_events($sessionId = 0)
     {
-        if ($this->course->has_resources(RESOURCE_EVENT)) {
+ /*       if ($this->course->has_resources(RESOURCE_EVENT)) {
             $sessionId = intval($sessionId);
             $table = Database::get_course_table(TABLE_AGENDA);
             $resources = $this->course->resources;
@@ -1525,7 +1525,7 @@ class CourseRestorer
                 }
             }
         }
-    }
+*/    }
 
     /**
      * Restore course-description
@@ -1582,7 +1582,7 @@ class CourseRestorer
      */
     public function restore_announcements($sessionId = 0)
     {
-        if ($this->course->has_resources(RESOURCE_ANNOUNCEMENT)) {
+ /*       if ($this->course->has_resources(RESOURCE_ANNOUNCEMENT)) {
             $sessionId = intval($sessionId);
             $table = Database::get_course_table(TABLE_ANNOUNCEMENT);
             $resources = $this->course->resources;
@@ -1694,7 +1694,7 @@ class CourseRestorer
                 }
             }
         }
-    }
+ */   }
 
     /**
      * Restore Quiz
