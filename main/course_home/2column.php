@@ -72,44 +72,45 @@ if (api_is_platform_admin()) {
 /*	TOOLS VISIBLE FOR EVERYBODY */
 
 $content .= '<div class="everybodyview">';
-$content .= '<table width="100%">';
-$content .= CourseHome::show_tool_2column(TOOL_PUBLIC);
-$content .= '</table>';
-$content .= '</div>';
+$content .= "<div class=\"viewcaption\">";
+$content .= "Actieve cursus-onderdelen";
+$content .= "</div>";
+$content .= '<ul id="course-tools-icons">';
+$content .= CourseHome::show_tool_list(TOOL_PUBLIC);
+$content .= '</ul>';
+$content .= '<br class="clear" /></div>';
 
 /*	COURSE ADMIN ONLY VIEW */
 
 // Start of tools for CourseAdmins (teachers/tutors)
 if (api_is_allowed_to_edit(null, true) && !api_is_coach()) {
     $content .= "<div class=\"courseadminview\">";
-    $content .= "<span class=\"viewcaption\">";
+    $content .= "<div class=\"viewcaption\">";
     $content .= get_lang('CourseAdminOnly');
-    $content .= "</span>";
-    $content .= "<table width=\"100%\">";
-
-    $content .= CourseHome::show_tool_2column(TOOL_COURSE_ADMIN);
+    $content .= "</div>";
+    $content .= "<ul>";
+    $content .= CourseHome::show_tool_list(TOOL_COURSE_ADMIN);
+	$content .= '</ul>';
+	$content .= '<br class="clear" /></div>';
 
     /*	INACTIVE TOOLS - HIDDEN (GREY) LINKS */
-
-    $content .= "<tr><td colspan=\"4\"><hr style='color:\"#4171B5\"' noshade=\"noshade\" size=\"1\" /></td></tr>\n".
-            "<tr>\n".
-            "<td colspan=\"4\">\n".
-            "<div style=\"margin-bottom: 10px;\"><font color=\"#808080\">\n".get_lang('InLnk')."</font></div>".
-            "</td>\n".
-            "</tr>";
-
-    $content .= CourseHome::show_tool_2column(TOOL_PUBLIC_BUT_HIDDEN);
-    $content .= "</table>";
-    $content .= "</div> ";
+    $content .= "<div class=\"courseadminview\">";
+    $content .= "<div class=\"viewcaption\">";
+    $content .= get_lang('InLnk');
+    $content .= "</div>";
+    $content .= "<ul>";
+    $content .= CourseHome::show_tool_list(TOOL_PUBLIC_BUT_HIDDEN);
+    $content .= "</ul>";
+    $content .= "<br class='clear' /></div> ";
 }
 
 /*	Tools for platform admin only */
 
 if (api_is_platform_admin() && api_is_allowed_to_edit(null, true) && !api_is_coach()) {
     $content .= '<div class="platformadminview">
-    <span class="viewcaption">'.get_lang('PlatformAdminOnly').'</span>
-    <table width="100%">
-        '.CourseHome::show_tool_2column(TOOL_PLATFORM_ADMIN).'
-    </table>
-    </div>';
+    <div class="viewcaption">'.get_lang('PlatformAdminOnly').'</div>
+    <ul>
+        '.CourseHome::show_tool_list(TOOL_PLATFORM_ADMIN).'
+    </ul>
+    <br class="clear" /></div>';
 }

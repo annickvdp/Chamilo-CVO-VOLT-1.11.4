@@ -443,6 +443,217 @@ class CourseHome
 
         return $html;
     }
+	
+    /**
+     * Displays the tools of a certain category.
+     *
+     * @return void
+     * @param string $course_tool_category	contains the category of tools to display:
+     * "Public", "PublicButHide", "courseAdmin", "claroAdmin"
+     */
+    public static function show_tool_list($course_tool_category)
+    {
+        $html = '';
+        $web_code_path = api_get_path(WEB_CODE_PATH);
+        $course_tool_table = Database::get_course_table(TABLE_TOOL_LIST);
+
+        $course_id = api_get_course_int_id();
+
+        switch ($course_tool_category) {
+            case TOOL_PUBLIC:
+                $condition_display_tools = ' WHERE c_id = '.$course_id.' AND visibility = 1 ';
+                if ((api_is_coach() || api_is_course_tutor()) && $_SESSION['studentview'] != 'studentview') {
+                    $condition_display_tools = ' WHERE c_id = '.$course_id.' AND (visibility = 1 OR (visibility = 0 AND name = "'.TOOL_TRACKING.'")) ';
+                }
+                $result = Database::query("SELECT * FROM $course_tool_table $condition_display_tools ORDER BY id");
+                $col_link = "##003399";
+                break;
+            case TOOL_PUBLIC_BUT_HIDDEN:
+                $result = Database::query("SELECT * FROM $course_tool_table WHERE c_id = $course_id AND visibility=0 AND admin=0 ORDER BY id");
+                $col_link = "##808080";
+                break;
+            case TOOL_COURSE_ADMIN:
+                $result = Database::query("SELECT * FROM $course_tool_table WHERE c_id = $course_id AND admin=1 AND visibility != 2 ORDER BY id");
+                $col_link = "##003399";
+                break;
+            case TOOL_PLATFORM_ADMIN:
+                $result = Database::query("SELECT * FROM $course_tool_table WHERE c_id = $course_id AND visibility = 2  ORDER BY id");
+                $col_link = "##003399";
+        }
+        $i = 0;
+
+        // Grabbing all the tools from $course_tool_table
+        while ($temp_row = Database::fetch_array($result)) {
+            if ($course_tool_category == TOOL_PUBLIC_BUT_HIDDEN && $temp_row['image'] != 'scormbuilder.gif') {
+                $temp_row['image'] = str_replace('.gif', '_na.gif', $temp_row['image']);
+            }
+            $all_tools_list[] = $temp_row;
+        }
+
+        // Grabbing all the links that have the property on_homepage set to 1
+        $course_link_table = Database::get_course_table(TABLE_LINK);
+        $course_item_property_table = Database::get_course_table(TABLE_ITEM_PROPERTY);
+
+        switch ($course_tool_category) {
+            case TOOL_PUBLIC:
+                $sql_links = "SELECT tl.*, tip.visibility
+                        FROM $course_link_table tl
+                        LEFT JOIN $course_item_property_table tip ON tip.tool='link' AND tl.c_id = tip.c_id AND tl.c_id = $course_id AND tip.ref=tl.id
+                        WHERE tl.on_homepage='1' AND tip.visibility = 1";
+                break;
+            case TOOL_PUBLIC_BUT_HIDDEN:
+                $sql_links = "SELECT tl.*, tip.visibility
+                    FROM $course_link_table tl
+                    LEFT JOIN $course_item_property_table tip ON tip.tool='link' AND tl.c_id = tip.c_id AND tl.c_id = $course_id AND tip.ref=tl.id
+                    WHERE tl.on_homepage='1' AND tip.visibility = 0";
+
+                break;
+            default:
+                $sql_links = null;
+                break;
+        }
+        if ($sql_links != null) {
+            $properties = array();
+            $result_links = Database::query($sql_links);
+            while ($links_row = Database::fetch_array($result_links)) {
+                unset($properties);
+                $properties['name'] = $links_row['title'];
+                $properties['link'] = $links_row['url'];
+                $properties['visibility'] = $links_row['visibility'];
+                $properties['image'] = $course_tool_category == TOOL_PUBLIC_BUT_HIDDEN ? 'external_na.gif' : 'external.gif';
+                $properties['adminlink'] = api_get_path(WEB_CODE_PATH).'link/link.php?action=editlink&id='.$links_row['id'];
+                $all_tools_list[] = $properties;
+            }
+        }
+        if (isset($all_tools_list)) {
+            $lnk = array();
+            foreach ($all_tools_list as & $tool) {
+                if ($tool['image'] == 'scormbuilder.gif') {
+                    // check if the published learnpath is visible for student
+                    $published_lp_id = self::get_published_lp_id_from_link($tool['link']);
+
+                    if (!api_is_allowed_to_edit(null, true) &&
+                        !learnpath::is_lp_visible_for_student(
+                            $published_lp_id,
+                            api_get_user_id(),
+                            api_get_course_id(),
+                            api_get_session_id()
+                        )
+                    ) {
+                        continue;
+                    }
+                }
+
+                if (api_get_session_id() != 0 &&
+                    in_array($tool['name'], array('course_maintenance', 'course_setting'))
+                ) {
+                    continue;
+                }
+
+                // NOTE : Table contains only the image file name, not full path
+                if (stripos($tool['link'], 'http://') === false &&
+                    stripos($tool['link'], 'https://') === false &&
+                    stripos($tool['link'], 'ftp://') === false
+                ) {
+                    $tool['link'] = $web_code_path.$tool['link'];
+                }
+                $class = '';
+                if ($course_tool_category == TOOL_PUBLIC_BUT_HIDDEN) {
+                    $class = 'class="text-muted"';
+                }
+                $qm_or_amp = strpos($tool['link'], '?') === false ? '?' : '&amp;';
+
+                $tool['link'] = $tool['link'];
+                $html .= '<li>';
+
+                if (strpos($tool['name'], 'visio_') !== false) {
+                    $html .= '<a  '.$class.' href="javascript: void(0);" onclick="javascript: window.open(\''.htmlspecialchars($tool['link']).(($tool['image'] == 'external.gif' || $tool['image'] == 'external_na.gif') ? '' : $qm_or_amp.api_get_cidreq()).'\',\'window_visio'.api_get_course_id().'\',config=\'height=\'+730+\', width=\'+1020+\', left=2, top=2, toolbar=no, menubar=no, scrollbars=yes, resizable=yes, location=no, directories=no, status=no\')" target="'.$tool['target'].'">';
+                } elseif (strpos($tool['name'], 'chat') !== false && api_get_course_setting('allow_open_chat_window')) {
+                    $html .= '<a href="javascript: void(0);" onclick="javascript: window.open(\''.htmlspecialchars($tool['link']).$qm_or_amp.api_get_cidreq().'\',\'window_chat'.api_get_course_id().'\',config=\'height=\'+600+\', width=\'+825+\', left=2, top=2, toolbar=no, menubar=no, scrollbars=yes, resizable=yes, location=no, directories=no, status=no\')" target="'.$tool['target'].'" '.$class.'>';
+                } else {
+                    $html .= '<a href="'.htmlspecialchars($tool['link']).(($tool['image'] == 'external.gif' || $tool['image'] == 'external_na.gif') ? '' : $qm_or_amp.api_get_cidreq()).'" target="'.$tool['target'].'" '.$class.'>';
+                }
+
+                $tool_name = self::translate_tool_name($tool);
+                $html .= Display::return_icon(
+                        $tool['image'],
+                        $tool_name,
+                        array(),
+                        null,
+                        ICON_SIZE_MEDIUM
+                    ).'&nbsp;'.$tool_name.'</a>';
+
+                // This part displays the links to hide or remove a tool.
+                // These links are only visible by the course manager.
+                unset($lnk);
+                if (api_is_allowed_to_edit(null, true) && !api_is_coach()) {
+                    if ($tool['visibility'] == '1' || $tool['name'] == TOOL_TRACKING) {
+                        $link['name'] = Display::returnFontAwesomeIcon('minus');
+                        $link['title'] = get_lang('Deactivate');
+                        $link['cmd'] = 'hide=yes';
+                        $lnk[] = $link;
+                    }
+
+                    if ($course_tool_category == TOOL_PUBLIC_BUT_HIDDEN) {
+                        //$link['name'] = Display::return_icon('add.gif', get_lang('Activate'));
+                        $link['name'] = Display::returnFontAwesomeIcon('plus');
+                        $link['title'] = get_lang('Activate');
+                        $link['cmd'] = 'restore=yes';
+                        $lnk[] = $link;
+
+                        if ($tool['added_tool'] == 1) {
+                            //$link['name'] = Display::return_icon('delete.gif', get_lang('Remove'));
+                            $link['name'] = Display::returnFontAwesomeIcon('trash');
+                            $link['title'] = get_lang('Remove');
+                            $link['cmd'] = 'remove=yes';
+                            $lnk[] = $link;
+                        }
+                    }
+                    if (isset($tool['adminlink'])) {
+                        $html .= '<a href="'.$tool['adminlink'].'">'.Display::return_icon('edit.gif', get_lang('Edit')).'</a>';
+                    }
+                }
+                if (api_is_platform_admin() && !api_is_coach()) {
+                    if ($tool['visibility'] == 2) {
+                        $link['name'] = Display::returnFontAwesomeIcon('undo');
+                        $link['title'] = get_lang('Activate');
+                        $link['cmd'] = 'hide=yes';
+                        $lnk[] = $link;
+
+                        if ($tool['added_tool'] == 1) {
+                            $link['name'] = get_lang('Delete');
+                            $link['cmd'] = 'askDelete=yes';
+                            $lnk[] = $link;
+                        }
+                    }
+                    if ($tool['visibility'] == 0 && $tool['added_tool'] == 0) {
+                        $link['name'] = Display::returnFontAwesomeIcon('trash');
+                        $link['title'] = get_lang('Remove');
+                        $link['cmd'] = 'remove=yes';
+                        $lnk[] = $link;
+                    }
+                }
+                if (is_array($lnk)) {
+                    $html .= '<div class="pull-right">';
+                    $html .= '<div class="btn-options">';
+                    $html .= '<div class="btn-group btn-group-sm" role="group">';
+                    foreach ($lnk as & $this_link) {
+                        if (!isset($tool['adminlink'])) {
+                            $html .= '<a class="btn btn-default" title='.$this_link['title'].' href="'.api_get_self().'?'.api_get_cidreq().'&amp;id='.$tool['id'].'&amp;'.$this_link['cmd'].'">'.$this_link['name'].'</a>';
+                        }
+                    }
+                    $html .= '</div>';
+                    $html .= '</div>';
+                    $html .= '</div>';
+                }
+                $html .= "</li>";
+
+                $i++;
+            }
+        }
+
+        return $html;
+    }
 
     /**
      * Gets the tools of a certain category. Returns an array expected

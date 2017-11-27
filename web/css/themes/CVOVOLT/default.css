@@ -225,4 +225,25 @@ header {
 .page-course {
     padding: 0px;
 }
+.everybodyview ul, .courseadminview ul, .platformadminview ul {
+    list-style-type: none;
+    list-style-position: inside;
+	margin: 0px;
+	padding: 0px;
+}
+
+.everybodyview li, .courseadminview li, .platformadminview li {
+    float: left;
+    width: 228px;
+}
+.everybodyview, .courseadminview, .platformadminview {
+	margin-bottom: 30px;
+}
+.clear {
+	clear: both;
+}
+.viewcaption {
+    border-bottom: 1px solid lightgray;
+    margin-bottom: 10px;
+}
 
