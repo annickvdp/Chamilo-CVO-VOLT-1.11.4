@@ -885,7 +885,9 @@ if (!empty($exerciseList)) {
                     continue;
                 }
 
-                $url = '<a '.$alt_title.'  href="overview.php?'.api_get_cidreq().$myorigin.$mylpid.$mylpitemid.'&exerciseId='.$row['id'].'">'.
+                $url = '<a '.$alt_title.'  href="overview.php?'.api_get_cidreq().$myorigin.$mylpid.$mylpitemid.'&exerciseId='.
+						$row['id'].'">'.
+						Display::return_icon('quiz.png', $row['title']).'&nbsp;&nbsp;'.
                         $cut_title.'</a>';
 
                 // Link of the exercise.
@@ -1135,16 +1137,21 @@ if (isset($attribute['path']) && is_array($attribute['path'])) {
                 );
 
                 $nbrActiveTests = $nbrActiveTests + 1;
+				
                 $item .= Display::tag(
-                    'td',
-                    Display::url(
+                'td',
+				 implode(PHP_EOL, [
+                    Display::return_icon('hotpotatoes_s.png', "HotPotatoes"),
+					Display::url(
                         $title,
                         'showinframes.php?'.api_get_cidreq().'&'.http_build_query([
                             'file' => $path,
                             'cid' => api_get_course_id(),
                             'uid' => $userId
-                        ])
+                        ]),
+						['class' => !$active ? 'text-muted' : null]
                     )
+				  ])
                 );
 
                 if (!empty($attempt)) {

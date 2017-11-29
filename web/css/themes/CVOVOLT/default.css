@@ -247,3 +247,8 @@ header {
     margin-bottom: 10px;
 }
 
+/* oefeningen */
+img[title="HotPotatoes"] {
+    margin-right: 5px;
+}
+
