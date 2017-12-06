@@ -1077,7 +1077,7 @@ class Wiki
                 $actionsRight .= '<a href="index.php?'.api_get_cidreq().'&action=history&title='.api_htmlentities(urlencode($page)).'" '.self::is_active_navigation_tab('history').'>'.
                     Display::return_icon('history.png', get_lang('ShowPageHistory'), '', ICON_SIZE_MEDIUM).'</a>';
                 //menu linkspages
-                $actionsRight .= '<a href="index.php?'.api_get_cidreq().'action=links&title='.api_htmlentities(urlencode($page)).'" '.self::is_active_navigation_tab('links').'>'.
+                $actionsRight .= '<a href="index.php?'.api_get_cidreq().'&action=links&title='.api_htmlentities(urlencode($page)).'" '.self::is_active_navigation_tab('links').'>'.
                     Display::return_icon('what_link_here.png', get_lang('LinksPages'), '', ICON_SIZE_MEDIUM).'</a>';
 
                 //menu delete wikipage
