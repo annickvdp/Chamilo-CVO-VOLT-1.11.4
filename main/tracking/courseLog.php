@@ -89,7 +89,25 @@ if ($export_csv) {
     ob_start();
 }
 $columnsToHideFromSetting = api_get_configuration_value('course_log_hide_columns');
-$columnsToHide = empty($columnsToHideFromSetting) ? array(0, 8, 9, 10, 11) : $columnsToHideFromSetting;
+$columnsToHide = empty($columnsToHideFromSetting) ? array(0, 3, 11, 12) : $columnsToHideFromSetting;
+    /*  column 0: OfficialCode
+		column 1: FirstName
+		column 2: LastName
+		column 3: Login
+		column 4: TrainingTime
+		column 5: CourseProgress
+		column 6: ExerciseProgress
+		column 7: ExerciseAverage
+		column 8: Score
+		column 9: Student_publication
+		column 10: Messages
+		column 11: Classes
+		column 12: Survey
+		column 13: FirstLoginInCourse
+		column 14: LatestLoginInCourse
+		column 15: Details
+		
+	*/
 $columnsToHide = json_encode($columnsToHide);
 
 $csv_content = array();
